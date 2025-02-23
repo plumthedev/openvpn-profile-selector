@@ -9,10 +9,11 @@ from flask import Flask, request, Response
 
 USERNAME = os.getenv("AUTH_USER", "plumthedev")
 PASSWORD = os.getenv("AUTH_PASS", "please-change-the-secret")
+HOST = os.getenv("HOST_ADDRESS", "0.0.0.0")
 ALPHANUMERIC_DASH_REGEX = re.compile(r"^[a-zA-Z0-9-]+$")
 IP_REGEX = re.compile(r"^(?:\d{1,3}\.){3}\d{1,3}$")
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
 
 app = Flask(__name__)
 logger = logging.getLogger(__name__)
@@ -47,11 +48,14 @@ def is_valid_port(value):
         return False
 
 def get_public_ip():
+    if HOST != "0.0.0.0":
+          return HOST
+
     try:
         return urllib.request.urlopen("https://api64.ipify.org").read().decode("utf-8").strip()
     except Exception as e:
         logger.error(f"IP fetch error: {str(e)}")
-        return "127.0.0.1"
+        return HOST
 
 
 def authenticate():
@@ -65,6 +69,9 @@ def authenticate():
         decoded_credentials = base64.b64decode(encoded_credentials).decode("utf-8")
         username, password = decoded_credentials.split(":", 1)
         
+        logger.info(f"Username [{username}]")
+        logger.info(f"Password [{password}]")
+        
         return username == USERNAME and password == PASSWORD
     except Exception:
         return False
@@ -72,6 +79,7 @@ def authenticate():
 @app.route("/rest/GetUserlogin", methods=["GET"])
 def generate_config():
 	if not authenticate():
+		logger.warning("Authentication failed.")
 		return Response("Unauthorized", status=401, headers={"WWW-Authenticate": 'Basic realm="Login Required"'})
 
 	profile_name = get_value("profile_name", "DEFAULT_PROFILE_NAME", "plumthedev-cloud")
@@ -85,27 +93,27 @@ def generate_config():
 	logger.info(f"Using template [{template_name}]")
 
 	if not is_valid_alphanumeric_dash(profile_name):
-		logger.info(f"Profile name [{profile_name}] is invalid.")
+		logger.error(f"Profile name [{profile_name}] is invalid.")
 		return Response("Invalid profile_name.", status=400)
 
 	if not is_valid_alphanumeric_dash(template_name):
-		logger.info(f"Profile name [{profile_name}] is invalid.")
+		logger.error(f"Profile name [{profile_name}] is invalid.")
 		return Response("Invalid template_name.", status=400)
 
 	if not is_valid_ip_or_domain(remote_address):
-		logger.info(f"Remote address [{remote_address}] is invalid.")
+		logger.error(f"Remote address [{remote_address}] is invalid.")
 		return Response("Invalid remote_address.", status=400)
 
 	if not is_valid_port(remote_port):
-		logger.info(f"Remote port [{remote_port}] is invalid.")
+		logger.error(f"Remote port [{remote_port}] is invalid.")
 		return Response("Invalid remote_port.", status=400)
 
 	if not is_valid_ip_or_domain(primary_dns):
-		logger.info(f"DNS 1 [{primary_dns}] is invalid.")
+		logger.error(f"DNS 1 [{primary_dns}] is invalid.")
 		return Response("Invalid primary_dns.", status=400)
 
 	if not is_valid_ip_or_domain(secondary_dns):
-		logger.info(f"DNS 2 [{primary_dns}] is invalid.")
+		logger.error(f"DNS 2 [{primary_dns}] is invalid.")
 		return Response("Invalid secondary_dns.", status=400)
 
 	template_path = f"/app/profiles/{template_name}.template"
@@ -134,7 +142,7 @@ def generate_config():
 	try:
 		config = template.format(**config_values)
 	except Exception as e:
-		logger.info(f"Error: {str(e)}")
+		logger.error(f"Error: {str(e)}")
 		return Response("Server error", status=500)
 
 	return Response(config, mimetype="text/plain")
@@ -142,8 +150,8 @@ def generate_config():
 @app.route("/<path:path>")
 def catch(path):
     headers = dict(request.headers)
-    logger.info(f"Request - Path: /{path if path else ''} | Method: {request.method}")
-    logger.info(f"Headers: {headers}")
+    logger.warning(f"Request - Path: /{path if path else ''} | Method: {request.method}")
+    logger.warning(f"Headers: {headers}")
 
     return Response(f"Not Found", status=404)
 

@@ -13,19 +13,40 @@ It retrieves the appropriate profile based on request parameters or environment 
 
 ## Installation and Running with Docker
 
-This project is containerized using Docker. To run it, use the provided `Dockerfile` and `docker-compose.yml`.
+This project is containerized using Docker. You can pull and run the pre-built image from GitHub Container Registry.
 
-### Steps:
-1. Build the Docker image:
-   ```sh
-   docker-compose build
-   ```
-2. Run the container:
-   ```sh
-   docker-compose up -d
-   ```
+### Running the Container
 
-The service will be available at `http://localhost:9920/`.
+```sh
+docker pull ghcr.io/plumthedev/openvpn-profile-selector:latest
+docker run -d -p 9420:8080 -e AUTH_PASS=my-secure-password ghcr.io/plumthedev/openvpn-profile-selector:latest
+```
+
+The service will be available at `http://localhost:9420/`.
+
+### Docker Compose Example
+
+To configure additional environment variables such as authentication credentials or custom profiles, you can use `docker-compose.yml`:
+
+```yaml
+services:
+  app:
+    image: ghcr.io/plumthedev/openvpn-profile-selector:latest
+    ports:
+      - "9420:8080"
+    environment:
+      AUTH_PASS: "my-secure-password"
+      DEFAULT_PROFILE_NAME: "custom-profile"
+    volumes:
+      - "./profiles:/app/profiles"
+      - "./keys:/app/keys"
+```
+
+Start the service with:
+
+```sh
+docker-compose up -d
+```
 
 ## API Endpoints
 
@@ -46,7 +67,7 @@ Generates an OpenVPN configuration file based on provided parameters or environm
 
 #### Example Request
 ```sh
-curl -u "plumthedev:please-change-the-secret" "http://localhost:9920/rest/GetUserlogin"
+curl -u "plumthedev:please-change-the-secret" "http://localhost:9420/rest/GetUserlogin"
 ```
 
 #### Responses
