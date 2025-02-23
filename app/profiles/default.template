@@ -1,0 +1,24 @@
+# profile [{profile_name}] generated at [{generated_at}]
+dev tun
+tls-client
+
+remote {remote_address} {remote_port}
+
+redirect-gateway def1
+
+dhcp-option DNS {primary_dns}
+dhcp-option DNS {secondary_dns}
+
+pull
+proto udp
+script-security 2
+comp-lzo
+reneg-sec 0
+cipher AES-256-CBC
+auth SHA512
+
+auth-user-pass
+
+<ca>
+{private_key}
+</ca>
