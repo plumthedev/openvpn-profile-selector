@@ -88,7 +88,7 @@ You can override default values by setting environment variables:
 - `AUTH_PASS` - Password for authentication (default: `please-change-the-secret`)
 - `DEFAULT_PROFILE_NAME` - Default profile name (default: `plumthedev-cloud`)
 - `DEFAULT_TEMPLATE_NAME` - Default template name (default: `default`)
-- `REMOTE_ADDRESS` - Default VPN server address (default: `HOST` or detected public IP)
+- `REMOTE_ADDRESS` - Default VPN server address (default: `HOST_ADDRESS` or detected public IP)
 - `REMOTE_PORT` - Default VPN server port (default: `1194`)
 - `PRIMARY_DNS` - Default primary DNS (default: `94.140.14.14`)
 - `SECONDARY_DNS` - Default secondary DNS (default: `94.140.15.15`)
