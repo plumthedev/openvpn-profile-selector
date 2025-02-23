@@ -36,6 +36,3 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository }}:latest,${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Image digest
-        run: echo "Image digest: ${{ steps.build.outputs.digest }}"
